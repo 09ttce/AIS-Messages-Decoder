@@ -37,25 +37,23 @@ std::string decodeAIS(const std::string& ais) {
 			bitString += std::bitset<6>(value).to_string();
 		}
 		else {
-			std::cerr << "Niepoprawny znak w wiadomoœci AIS: " << c << std::endl;
+			std::cerr << "Niepoprawny znak w wiadomoï¿½ci AIS: " << c << std::endl;
 			return bitString;
 		}
 	}
 	return bitString;
 }
-
-int extractBits(const std::string& bitString, int start, int length) {
-	return std::bitset<32>(bitString.substr(start, length)).to_ulong();
+std::string extractBitSubstring(const std::string& bitString, int start, int end) {
+    // Sprawdzenie poprawnoÅ›ci wejÅ›ciowych parametrÃ³w
+    if (start < 0 || end >= bitString.size() || start > end) {
+        throw std::out_of_range("NieprawidÅ‚owe pozycje start i end");
+    }
+    // WyodrÄ™bnienie podciÄ…gu bitÃ³w
+    return bitString.substr(start, end - start + 1);
 }
+   
 
-// Funkcja do odczytu wartoœci liczby z okreœlonego zakresu bitów jako liczba ze znakiem
-int extractSignedBits(const std::string& bitString, int start, int length) {
-	int value = std::bitset<32>(bitString.substr(start, length)).to_ulong();
-	if (value & (1 << (length - 1))) { // Jeœli najstarszy bit jest ustawiony (znak)
-		value -= (1 << length); // Zastosuj kodowanie uzupe³nienia do dwóch
-	}
-	return value;
-}
+
 
 
 int main()
@@ -63,7 +61,7 @@ int main()
 	std::ifstream file("data.txt");
 	if (!file)
 	{
-		std::cerr << "Nie mo¿na otworzyæ pliku!" << std::endl;
+		std::cerr << "Nie mozna otworzyc pliku!" << std::endl;
 		return 1;
 	}
 	std::vector<Dane> dane;
@@ -93,26 +91,21 @@ int main()
 
 	std::cout << "Odczytane dane z pliku: " << std::endl;
 
-	for (const auto& Dane : dane)
-	{
-		std::string aisMessage = "54S3wJ01vs;1K8@KV204q@tpT60:222222222216:@?994wU0AQi0CTjp888";
+	//for (const auto& Dane : dane)
+	//{
+	std::string aisMessage = "54S3wJ01vs;1K8@KV204q@tpT60:222222222216:@?994wU0AQi0CTjp888";   //testowy ciÄ…g mmsi z pliku
+	//std::string aisMessage = Dane.mmsi;
     std::string bitString = decodeAIS(aisMessage);
 
-	if (!bitString.empty()) {
-		//std::cout << "Zdekodowany ci¹g bitów: " << bitString << std::endl;
+	std::string messType = extractBitSubstring(bitString, 0, 5);
+    std::cout << "Typ wiadomosci: " << messType << std::endl;
+	std::string repIndicator = extractBitSubstring(bitString, 6, 7);
+    std::cout << "PowtÃ³rzenia: " << repIndicator << std::endl;
+	std::string mmsiBits = extractBitSubstring(bitString, 8, 37);
+    std::cout << "MMSI: " << mmsiBits << std::endl;
 
-		
-		int mmsi = extractBits(bitString, 0, 40);
+	
 
-		
-
-		
-		std::cout << "MMSI: " << mmsi << std::endl;
-		
-	}
-	else {
-		std::cerr << "B³¹d w dekodowaniu wiadomoœci AIS." << std::endl;
-	}
-	}
+	//}
 	return 0;
 }
