@@ -1,3 +1,8 @@
+// Projekt POS
+// Dekodowanie AIS
+// komentarze do dokumentacji na koniec bo to ostatni problem najmniej istotny
+
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -83,7 +88,7 @@ unsigned long long convertBitsToDecimal(const std::string& bitString) {
 
 
 
-int main()
+int main()  // oczywiście wywali się z tego maina większość i zrobi funkcje jak już będzie działać + podzieli sie na pliki bo to w wymaganiach xd
 {
 	std::ifstream file("data.txt");
 	if (!file)
@@ -94,7 +99,7 @@ int main()
 	std::vector<Dane> dane;
 	std::string line;
 
-	while (std::getline(file, line))
+	while (std::getline(file, line))  // poprawny struct, dobrze czyta dane wejściowe ale na razie tylko linia po linii bez błędów/powtórzeń
 	{
 		std::stringstream ss(line);
 		std::string date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, payload, bytes, checkSum;
@@ -131,22 +136,22 @@ int main()
 
 	std::string revMessType = extractBitSubstring(revBitstring, 0, 5);
 	std::string bitMessType = reverseEachBitSegment(revMessType, revMessType.length());
-	unsigned long long messType = convertBitsToDecimal(bitMessType);
+	unsigned int messType = convertBitsToDecimal(bitMessType);
     std::cout << "Typ wiadomosci: " << revMessType << std::endl;
 	std::cout << "Typ wiadomosci: " << bitMessType << std::endl;
-	std::cout << "Typ wiadomosci: " << messType << std::endl;
+	std::cout << "Typ wiadomosci: " << messType << std::endl;  // typ wiadomości (uwzględniamy 1-3 i 5 resztę się potem zignoruje)
 	std::string revRepIndicator = extractBitSubstring(revBitstring, 6, 7);
 	std::string bitRepIndicator = reverseEachBitSegment(revRepIndicator, revRepIndicator.length());
-	unsigned long long repIndicator = convertBitsToDecimal(bitRepIndicator);
+	unsigned int repIndicator = convertBitsToDecimal(bitRepIndicator);
     std::cout << "Powtórzenia: " << revRepIndicator << std::endl;
 	std::cout << "Powtórzenia: " << bitRepIndicator << std::endl;
-	std::cout << "Powtórzenia: " << repIndicator << std::endl;
+	std::cout << "Powtórzenia: " << repIndicator << std::endl;  // powtorzenia wiadomosci nwm w sumie chyba z kolejnymi
 	std::string revMmsiBits = extractBitSubstring(revBitstring, 8, 37);
 	std::string bitMmsiBits = reverseEachBitSegment(revMmsiBits, revMmsiBits.length());
-	unsigned long long mmsiBits = convertBitsToDecimal(bitMmsiBits);
+	unsigned int mmsiBits = convertBitsToDecimal(bitMmsiBits);
     std::cout << "MMSI: " << revMmsiBits << std::endl;
 	std::cout << "MMSI: " << bitMmsiBits << std::endl;
-	std::cout << "MMSI: " << mmsiBits << std::endl;
+	std::cout << "MMSI: " << mmsiBits << std::endl; // MMSI wersja ostateczna
 
 
 
