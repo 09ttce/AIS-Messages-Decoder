@@ -3,6 +3,8 @@
 #include <vector>
 #include <sstream>
 #include <bitset>
+#include <algorithm>
+#include <math.h>
 
 struct Dane
 {
@@ -13,7 +15,7 @@ struct Dane
 	std::string repeatIndicator;
 	std::string seqID;
 	std::string channelCode;
-	std::string mmsi;
+	std::string payload;
 	std::string bytes;
 	std::string checkSum;
 };
@@ -43,6 +45,20 @@ std::string decodeAIS(const std::string& ais) {
 	}
 	return bitString;
 }
+
+
+std::string reverseEachBitSegment(const std::string& bitString, int length) {
+    
+
+    std::string result;
+    for (size_t i = 0; i < bitString.size(); i += length) {
+        std::string segment = bitString.substr(i, length);
+        std::reverse(segment.begin(), segment.end());
+        result += segment;
+    }
+
+    return result;
+}
 std::string extractBitSubstring(const std::string& bitString, int start, int end) {
     // Sprawdzenie poprawności wejściowych parametrów
     if (start < 0 || end >= bitString.size() || start > end) {
@@ -51,8 +67,19 @@ std::string extractBitSubstring(const std::string& bitString, int start, int end
     // Wyodrębnienie podciągu bitów
     return bitString.substr(start, end - start + 1);
 }
-   
 
+unsigned long long convertBitsToDecimal(const std::string& bitString) {
+    unsigned long long decimalValue = 0;
+    int length = bitString.size();
+    
+    for (int i = 0; i < length; ++i) {
+        if (bitString[length - 1 - i] == '1') {
+            decimalValue += static_cast<unsigned long long>(std::pow(2, i));
+        }
+    }
+
+    return decimalValue;
+}
 
 
 
@@ -70,7 +97,7 @@ int main()
 	while (std::getline(file, line))
 	{
 		std::stringstream ss(line);
-		std::string date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, mmsi, bytes, checkSum;
+		std::string date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, payload, bytes, checkSum;
 		int repeatIndicator;
 		std::getline(ss, date, '	');
 		std::getline(ss, hour, '	');
@@ -80,11 +107,11 @@ int main()
 		repeatIndicator = std::stoi(repeatIndicatorStr);
 		std::getline(ss, seqID, ',');
 		std::getline(ss, channelCode, ',');
-		std::getline(ss, mmsi, ',');
+		std::getline(ss, payload, ',');
 		std::getline(ss, bytes, '*');
 		std::getline(ss, checkSum, '*');
 
-		dane.push_back({ date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, mmsi, bytes, checkSum });
+		dane.push_back({ date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, payload, bytes, checkSum });
 	}
 
 	file.close();
@@ -93,19 +120,36 @@ int main()
 
 	//for (const auto& Dane : dane)
 	//{
-	std::string aisMessage = "54S3wJ01vs;1K8@KV204q@tpT60:222222222216:@?994wU0AQi0CTjp888";   //testowy ciąg mmsi z pliku
-	//std::string aisMessage = Dane.mmsi;
+	std::string aisMessage = "B3n@?S0000EOkfWiUF8@7wSUkP06";   //testowy ciąg mmsi z pliku
+	//std::string aisMessage = Dane.payload;
     std::string bitString = decodeAIS(aisMessage);
+	//std::cout << "ciąg: " << bitString <<std::endl;
 
-	std::string messType = extractBitSubstring(bitString, 0, 5);
-    std::cout << "Typ wiadomosci: " << messType << std::endl;
-	std::string repIndicator = extractBitSubstring(bitString, 6, 7);
-    std::cout << "Powtórzenia: " << repIndicator << std::endl;
-	std::string mmsiBits = extractBitSubstring(bitString, 8, 37);
-    std::cout << "MMSI: " << mmsiBits << std::endl;
+	std::string revBitstring = reverseEachBitSegment(bitString, 6);
+    //std::cout << "Odwrócony ciąg bitów: " << revBitstring << std::endl;
 
-	
 
-	//}
+	std::string revMessType = extractBitSubstring(revBitstring, 0, 5);
+	std::string bitMessType = reverseEachBitSegment(revMessType, revMessType.length());
+	unsigned long long messType = convertBitsToDecimal(bitMessType);
+    std::cout << "Typ wiadomosci: " << revMessType << std::endl;
+	std::cout << "Typ wiadomosci: " << bitMessType << std::endl;
+	std::cout << "Typ wiadomosci: " << messType << std::endl;
+	std::string revRepIndicator = extractBitSubstring(revBitstring, 6, 7);
+	std::string bitRepIndicator = reverseEachBitSegment(revRepIndicator, revRepIndicator.length());
+	unsigned long long repIndicator = convertBitsToDecimal(bitRepIndicator);
+    std::cout << "Powtórzenia: " << revRepIndicator << std::endl;
+	std::cout << "Powtórzenia: " << bitRepIndicator << std::endl;
+	std::cout << "Powtórzenia: " << repIndicator << std::endl;
+	std::string revMmsiBits = extractBitSubstring(revBitstring, 8, 37);
+	std::string bitMmsiBits = reverseEachBitSegment(revMmsiBits, revMmsiBits.length());
+	unsigned long long mmsiBits = convertBitsToDecimal(bitMmsiBits);
+    std::cout << "MMSI: " << revMmsiBits << std::endl;
+	std::cout << "MMSI: " << bitMmsiBits << std::endl;
+	std::cout << "MMSI: " << mmsiBits << std::endl;
+
+
+
+
 	return 0;
 }
