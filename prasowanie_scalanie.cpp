@@ -33,7 +33,7 @@ AISMessage parseAISMessage(const std::string& message) {
     int messageId;
 
     // Debugowanie wejœciowego komunikatu
-    std::cout << "Parsing message: " << message << std::endl;
+    //std::cout << "Parsing message: " << message << std::endl;
 
     int result = std::sscanf(message.c_str(), "!AIVDM,%d,%d,%d,%c,%[^,],%d*%x",
                 &parsed.totalFragments, &parsed.fragmentNumber, &messageId,
@@ -48,14 +48,15 @@ AISMessage parseAISMessage(const std::string& message) {
     }
 
     // Debugowanie wyniku parsowania
-    std::cout << "Parsed result: totalFragments=" << parsed.totalFragments
-              << ", fragmentNumber=" << parsed.fragmentNumber
-              << ", messageId=" << parsed.messageId
-              << ", channel=" << parsed.channel
-              << ", payload=" << parsed.payload
-              << ", fillBits=" << parsed.fillBits
-              << ", checksum=" << parsed.checksum
-              << std::endl;
+     
+     // std::cout << "Parsed result: totalFragments=" << parsed.totalFragments
+          //    << ", fragmentNumber=" << parsed.fragmentNumber
+          //    << ", messageId=" << parsed.messageId
+           //   << ", channel=" << parsed.channel
+           //   << ", payload=" << parsed.payload
+           //   << ", fillBits=" << parsed.fillBits
+           //   << ", checksum=" << parsed.checksum
+           //   << std::endl;
 
     return parsed;
 }
@@ -72,7 +73,7 @@ std::vector<std::string> mergeAISMessages(const std::vector<std::string>& messag
     for (const auto& message : messages) {
         AISMessage parsed = parseAISMessage(message);
         if (parsed.totalFragments == -1) {
-            std::cerr << "Nie uda³o siê sparsowaæ wiadomoœci: " << message << std::endl;
+           // std::cerr << "Nie uda³o siê sparsowaæ wiadomoœci: " << message << std::endl;
             continue;
         }
 
@@ -139,10 +140,15 @@ int main() {
     }
 
     std::vector<std::string> merged = mergeAISMessages(aisMessages);
-    for (const auto& message : merged) {
-        std::cout << "Po³¹czona wiadomoœæ: " << message << std::endl;
+    
+
+   
+  // zapisanie do wektora stringów sprasowanych wiadomoœci
+  std::vector<std::string> result(merged.begin(),merged.end());
+  // wyœwietlenie scalonych wiadomoœci
+  for(const auto& msg : result)
+    {
+      std::cout << msg << std::endl;
     }
-
-    return 0;
+   return 0;
 }
-
