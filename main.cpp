@@ -33,7 +33,7 @@ int sixBitAsciiToValue(char c)
 	}
 	else if (c >= '`' && c <= 'w')
 	{
-		return c - '`' + 40;
+		return c - 56;
 	}
 	return -1;
 }
@@ -46,23 +46,28 @@ std::string decodeAIS(const std::string &ais)
 		int value = sixBitAsciiToValue(c);
 
 		bitString += std::bitset<6>(value).to_string();
+		
+
 	}
+	
 	return bitString;
 }
-
+/*
 std::string reverseEachBitSegment(const std::string &bitString, int length)
 {
 
-	std::string result;
-	for (size_t i = 0; i < bitString.size(); i += length)
+	std::string wynik = "";
+	for (size_t i = 0; i < bitString.length(); i += length)
 	{
-		std::string segment = bitString.substr(i, length);
-		std::reverse(segment.begin(), segment.end());
-		result += segment;
+		for(int j = length -1; j >= 0; --j){
+		wynik += bitString[i + j];
+       
+		}
 	}
-
-	return result;
+	//std::cout << wynik << std::endl;
+	return wynik;
 }
+*/
 std::string extractBitSubstring(const std::string &bitString, int start, int end)
 {
 	// Sprawdzenie poprawności wejściowych parametrów
@@ -93,7 +98,7 @@ std::string convertBitsToDecimal(const std::string &bitString)
 
 std::string binaryToASCII(const std::string &bitString)
 {
-	std::cout << bitString << std::endl;
+	//std::cout << bitString << std::endl;
 	std::string result;
 	bool encounteredAtSign = false;
 
@@ -103,7 +108,7 @@ std::string binaryToASCII(const std::string &bitString)
 		std::string chunk = bitString.substr(i, 6);
 		// Zamień 6-bitowy ciąg na liczbę dziesiętną
 		int decimalValue = std::bitset<6>(chunk).to_ulong();
-		std::cout << decimalValue << " ";
+		//std::cout << decimalValue << " ";
 
 		char asciiChar;
 		if (decimalValue >= 0 && decimalValue <= 31)
@@ -200,18 +205,18 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 	{
 		return "Error";
 	}
-	std::string bitStr = reverseEachBitSegment(revString, revString.length());
-	std::string decimal = convertBitsToDecimal(bitStr);
+	//std::string bitStr = reverseEachBitSegment(revString, revString.length());
+	std::string decimal = convertBitsToDecimal(revString);
 
 	if (dataType == "nav")
 	{
 		decimal = navStatus(decimal);
-		std::cout << info << decimal << std::endl;
+		//std::cout << info << decimal << std::endl;
 		return decimal;
 	}
 	else if (dataType == "b")
 	{
-		std::cout << info << decimal << std::endl;
+		//std::cout << info << decimal << std::endl;
 		if (decimal == "1")
 		{
 			return "True";
@@ -226,7 +231,7 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 		float lt = std::stof(decimal);
 		lt = lt / 10000000;
 		std::string ltude = std::to_string(lt);
-		std::cout << info << ltude << std::endl;
+		//std::cout << info << ltude << std::endl;
 		return ltude;
 	}
 	else if (dataType == "u")
@@ -234,19 +239,19 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 		float speed = std::stof(decimal);
 		speed = speed / 10;
 		std::string sspeed = std::to_string(speed);
-		std::cout << info << speed << std::endl;
+		//std::cout << info << speed << std::endl;
 		return sspeed;
 	}
 	else if (dataType == "t")
 	{
 		std::string text;
-		text = binaryToASCII(bitStr);
-		std::cout << info << text << std::endl;
+		text = binaryToASCII(revString);
+		//std::cout << info << text << std::endl;
 		return text;
 	}
 	else if (dataType == "")
 	{
-		std::cout << info << decimal << std::endl;
+		//std::cout << info << decimal << std::endl;
 		return decimal;
 	}
 }
@@ -393,8 +398,8 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 
 	for (const auto &InputData : inputData)
 	{
-		// std::string aisMessage = "54S3wJ01vs;1K8@KV204q@tpT60:222222222216:@?994wU0AQi0CTjp88888888888880";
-
+		//std::string aisMessage = "54S3wJ01vs;1K8@KV204q@tpT60:222222222216:@?994wU0AQi0CTjp88888888888880";
+		
 		std::string date = InputData.date;
 		std::string hour = InputData.hour;
 
@@ -402,10 +407,10 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 
 		std::string frags = InputData.fragsNumber;
 		std::string repeat = InputData.repeatIndicator;
-
+		
 		std::string bitString = decodeAIS(aisMessage);
 
-		std::string revBitstring = reverseEachBitSegment(bitString, 6);
+		//std::string revBitstring = reverseEachBitSegment(bitString, 6);
 
 		if (bitString == "Error")
 		{
@@ -414,23 +419,24 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		}
 
 		std::string out;
-		std::string msgType = decodePayload(revBitstring, 0, 5, "MessageType: ", "");
+		std::string msgType = decodePayload(bitString, 0, 5, "MessageType: ", "");
 		if (msgType == "1" || msgType == "2" || msgType == "3")
 		{
-			out = message1to3(revBitstring);
-			outFile1 << date << hour << msgType << out << std::endl;
+			out = message1to3(bitString);
+			outFile1 << date << "	" << "	" << hour << "		"<<  msgType << "			" << out << std::endl;
 		}
 		else if (msgType == "5")
 		{
-			out = message5(revBitstring);
+			out = message5(bitString);
 			outFile5 << date << hour << msgType << out << std::endl;
 		}
-		else
-			std::cout << "Inny typ wiadomości" << std::endl;
-
+		
+			//std::cout << "Inny typ wiadomości" << std::endl;
+		std::cout << out << std::endl;
 		
 		// outFile << date << "	" << hour << "	" << msgType << "	 "<< mmsiout << "		" << navout << "	" << rotout << "	" << sogout << "	" << posaccout << "		" << lonout << "	" << latout << "	" << cogout << "	" << thout << "	" << tsout << "	" << miout << "	" << spareout << "	" << rflagout << "	" << rstatus << std::endl;
 	}
+	
 
 	outFile1.close();
 	outFile5.close();
