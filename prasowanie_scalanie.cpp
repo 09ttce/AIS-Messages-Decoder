@@ -28,23 +28,34 @@ struct AISMessage {
  */
 AISMessage parseAISMessage(const std::string& message) {
     AISMessage parsed;
-    int messageId;
-    int tempChecksum;
     char tempChannel;
     char payload[1024];
+    int messageId;
+
+    // Debugowanie wejœciowego komunikatu
+    std::cout << "Parsing message: " << message << std::endl;
 
     int result = std::sscanf(message.c_str(), "!AIVDM,%d,%d,%d,%c,%[^,],%d*%x",
                 &parsed.totalFragments, &parsed.fragmentNumber, &messageId,
-                &tempChannel, payload, &parsed.fillBits, &tempChecksum);
+                &tempChannel, payload, &parsed.fillBits, &parsed.checksum);
 
     if (result == 7) {
         parsed.messageId = std::to_string(messageId);
         parsed.channel = tempChannel;
         parsed.payload = payload;
-        parsed.checksum = tempChecksum;
     } else {
         parsed.totalFragments = -1;
     }
+
+    // Debugowanie wyniku parsowania
+    std::cout << "Parsed result: totalFragments=" << parsed.totalFragments
+              << ", fragmentNumber=" << parsed.fragmentNumber
+              << ", messageId=" << parsed.messageId
+              << ", channel=" << parsed.channel
+              << ", payload=" << parsed.payload
+              << ", fillBits=" << parsed.fillBits
+              << ", checksum=" << parsed.checksum
+              << std::endl;
 
     return parsed;
 }
@@ -56,7 +67,7 @@ AISMessage parseAISMessage(const std::string& message) {
  * @return Wektor scalonych wiadomoœci AIS.
  */
 std::vector<std::string> mergeAISMessages(const std::vector<std::string>& messages) {
-    std::map<std::tuple<int, std::string, char>, std::vector<std::pair<int, std::string>>> groupedMessages;
+    std::map<std::tuple<std::string, char>, std::vector<std::pair<int, std::string>>> groupedMessages;
 
     for (const auto& message : messages) {
         AISMessage parsed = parseAISMessage(message);
@@ -65,14 +76,14 @@ std::vector<std::string> mergeAISMessages(const std::vector<std::string>& messag
             continue;
         }
 
-        auto key = std::make_tuple(parsed.totalFragments, parsed.messageId, parsed.channel);
+        auto key = std::make_tuple(parsed.messageId, parsed.channel);
         groupedMessages[key].emplace_back(parsed.fragmentNumber, parsed.payload);
     }
 
     std::vector<std::string> mergedMessages;
     for (auto it = groupedMessages.begin(); it != groupedMessages.end(); ++it) {
         std::vector<std::pair<int, std::string>>& fragments = it->second;
-        if (fragments.size() == 1 && fragments[0].first == 1) {
+        if (fragments.size() == 1) {
             mergedMessages.push_back(fragments[0].second); // Pojedyncza wiadomoœæ
         } else {
             std::sort(fragments.begin(), fragments.end());
@@ -88,7 +99,7 @@ std::vector<std::string> mergeAISMessages(const std::vector<std::string>& messag
 }
 
 /**
- * @brief Wczytuje wiadomoœci AIS z pliku tekstowego.
+ * @brief Wczytuje wiadomoœci AIS z pliku tekstowego, pomijaj¹c znaczniki czasowe.
  * 
  * @param filename Nazwa pliku do wczytania.
  * @return Wektor wiadomoœci AIS w formie tekstowej.
@@ -100,7 +111,11 @@ std::vector<std::string> readMessagesFromFile(const std::string& filename) {
 
     if (file.is_open()) {
         while (getline(file, line)) {
-            messages.push_back(line);
+            // Znalezienie pozycji pierwszego wyst¹pienia wiadomoœci AIS
+            size_t pos = line.find("!AIVDM");
+            if (pos != std::string::npos) {
+                messages.push_back(line.substr(pos));
+            }
         }
         file.close();
     } else {
@@ -116,7 +131,7 @@ std::vector<std::string> readMessagesFromFile(const std::string& filename) {
  * @return Kod wyjœcia programu.
  */
 int main() {
-    std::vector<std::string> aisMessages = readMessagesFromFile("AIS_messages.txt");
+    std::vector<std::string> aisMessages = readMessagesFromFile("ais_messages1.txt");
 
     if (aisMessages.empty()) {
         std::cerr << "Brak wiadomoœci do przetworzenia." << std::endl;
