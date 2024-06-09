@@ -52,22 +52,8 @@ std::string decodeAIS(const std::string &ais)
 	
 	return bitString;
 }
-/*
-std::string reverseEachBitSegment(const std::string &bitString, int length)
-{
 
-	std::string wynik = "";
-	for (size_t i = 0; i < bitString.length(); i += length)
-	{
-		for(int j = length -1; j >= 0; --j){
-		wynik += bitString[i + j];
-       
-		}
-	}
-	//std::cout << wynik << std::endl;
-	return wynik;
-}
-*/
+
 std::string extractBitSubstring(const std::string &bitString, int start, int end)
 {
 	// Sprawdzenie poprawności wejściowych parametrów
@@ -229,9 +215,8 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 	else if (dataType == "I4")
 	{
 		float lt = std::stof(decimal);
-		lt = lt / 10000000;
+		lt = lt / 1000000;
 		std::string ltude = std::to_string(lt);
-		//std::cout << info << ltude << std::endl;
 		return ltude;
 	}
 	else if (dataType == "u")
@@ -239,19 +224,16 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 		float speed = std::stof(decimal);
 		speed = speed / 10;
 		std::string sspeed = std::to_string(speed);
-		//std::cout << info << speed << std::endl;
 		return sspeed;
 	}
 	else if (dataType == "t")
 	{
 		std::string text;
 		text = binaryToASCII(revString);
-		//std::cout << info << text << std::endl;
 		return text;
 	}
 	else if (dataType == "")
 	{
-		//std::cout << info << decimal << std::endl;
 		return decimal;
 	}
 }
@@ -263,7 +245,7 @@ std::string message1to3(std::string revBitstring)
 	repeatIndicator = decodePayload(revBitstring, 6, 7, "RepeatIndicator: ", "");
 	mmsiout = decodePayload(revBitstring, 8, 37, "MMSI: ", "");
 	if(mmsiout.size() != 9){
-		return "Error!";
+		return "	Error! - nieprawidlowe MMSI";
 	}
 	navout = decodePayload(revBitstring, 38, 41, "NavStatus: ", "");
 	rotout = decodePayload(revBitstring, 42, 49, "Rate of Turn: ", "");
@@ -280,7 +262,7 @@ std::string message1to3(std::string revBitstring)
 	rstatus = decodePayload(revBitstring, 149, 167, "Radio status: ", "");
 
 	std::ostringstream outputstream;
-	outputstream << "		" << mmsiout << "	" << navout<< "	" << rotout << "	" << sogout << "	" << posaccout << "	" << lonout << "	" << latout << "	" << cogout << "	" << thout << "	" << tsout << "	" << miout << "	" << spareout << "	" << rflagout << "	" << rstatus;
+	outputstream << mmsiout << "	" << navout<< "				" << rotout << "			" << sogout << "		" << posaccout << "			" << lonout << "		" << latout << "		" << cogout << "		" << thout << "			" << tsout << "			" << miout << "			" << spareout << "			" << rflagout << "			" << rstatus;
 	std::string output;
 	output = outputstream.str();
 
@@ -293,7 +275,7 @@ std::string message5(std::string revBitstring)
 	repeatIndicator = decodePayload(revBitstring, 6, 7, "RepeatIndicator: ", "");
 	mmsiout = decodePayload(revBitstring, 8, 37, "MMSI: ", "");
 	if(mmsiout.size() != 9){
-		return "Error!";
+		return "	Error! - nieprawidlowe MMSI";
 	}
 	aisversion = decodePayload(revBitstring, 38, 39, "AisVersion: ", "");
 	imonumber = decodePayload(revBitstring, 40, 69, "IMO numb: ", "");
@@ -313,7 +295,7 @@ std::string message5(std::string revBitstring)
 	destination = decodePayload(revBitstring, 302, 421, "Destination: ", "t");
 	dte = decodePayload(revBitstring, 422, 422, "DTE: ", "");
 	std::ostringstream outputstream;
-	outputstream << "		" << mmsiout << " 	" << aisversion << "	" << imonumber << "	"<< callsign << "	"<< vesselname << "	" << shiptype << "	" << dimtobow << "	"<< dimtostern << "	" << dimtoport << "	" << dimtosb << "	" << pft << "	" << etam << "	" << etad << "	" << etah << "	" << etamin << "	" << draught << "	" << destination << "	" << dte;
+	outputstream  << mmsiout << " 	" << aisversion << "	" << imonumber << "	"<< callsign << "	"<< vesselname << "	" << shiptype << "	" << dimtobow << "	"<< dimtostern << "	" << dimtoport << "	" << dimtosb << "	" << pft << "	" << etam << "	" << etad << "	" << etah << "	" << etamin << "	" << draught << "	" << destination << "	" << dte;
 	std::string output;
 	output = outputstream.str();
 	return output;
@@ -340,13 +322,13 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		return 1;
 	}
 
-	outFile1 << "Date	" << "Hour		" << "MMSI		" << "Navigation Status" << std::endl;
+	outFile1 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "Nav Status" <<  "	Rate of Turn	" << " Speed " << "		 Pos Accuracy " << "	 Longtitude " << " 		Latitude " << "		 CoG " << " 		Heading " << " Time stamp " << "	 Maneuver " << " 	Spare " << "	 RAIM " << " RADIO STATUS" <<std::endl;
 	std::vector<InputData> inputData;
 	std::string line;
 	std::string buffer;
 
 	
-	while (std::getline(file, line)) // poprawny struct, dobrze czyta dane wejściowe ale na razie tylko linia po linii bez błędów/powtórzeń
+	while (std::getline(file, line))
 	{
 		std::stringstream ss(line);
 		std::string date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, payload, bytes, checkSum;
@@ -382,8 +364,8 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
                 std::getline(nextSs, nextBytes, '*');
                 std::getline(nextSs, nextCheckSum, '*');
 
-                buffer = nextPayload;  // Zakładamy, że mmsi jest w polu payload następnej linii
-                payload += buffer;  // Dopisujemy mmsi do aktualnego payload
+                buffer = nextPayload;
+                payload += buffer;
             }
 			
 
@@ -398,7 +380,6 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 
 	for (const auto &InputData : inputData)
 	{
-		//std::string aisMessage = "54S3wJ01vs;1K8@KV204q@tpT60:222222222216:@?994wU0AQi0CTjp88888888888880";
 		
 		std::string date = InputData.date;
 		std::string hour = InputData.hour;
@@ -410,12 +391,10 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		
 		std::string bitString = decodeAIS(aisMessage);
 
-		//std::string revBitstring = reverseEachBitSegment(bitString, 6);
 
 		if (bitString == "Error")
 		{
 			outFile1 << "Error" << std::endl;
-			// break;
 		}
 
 		std::string out;
@@ -431,10 +410,8 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 			outFile5 << date << hour << msgType << out << std::endl;
 		}
 		
-			//std::cout << "Inny typ wiadomości" << std::endl;
 		std::cout << out << std::endl;
 		
-		// outFile << date << "	" << hour << "	" << msgType << "	 "<< mmsiout << "		" << navout << "	" << rotout << "	" << sogout << "	" << posaccout << "		" << lonout << "	" << latout << "	" << cogout << "	" << thout << "	" << tsout << "	" << miout << "	" << spareout << "	" << rflagout << "	" << rstatus << std::endl;
 	}
 	
 
