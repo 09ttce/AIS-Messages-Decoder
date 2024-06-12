@@ -1,6 +1,5 @@
 // Projekt POS
 // Dekodowanie AIS
-// komentarze do dokumentacji na koniec bo to ostatni problem najmniej istotny
 
 #include <iostream>
 #include <fstream>
@@ -9,6 +8,7 @@
 #include <bitset>
 #include <algorithm>
 #include <math.h>
+#include <iomanip>
 
 struct InputData
 {
@@ -23,7 +23,6 @@ struct InputData
 	std::string bytes;
 	std::string checkSum;
 };
-
 
 int sixBitAsciiToValue(char c)
 {
@@ -44,10 +43,7 @@ std::string decodeAIS(const std::string &ais)
 	for (char c : ais)
 	{
 		int value = sixBitAsciiToValue(c);
-
 		bitString += std::bitset<6>(value).to_string();
-		
-
 	}
 	
 	return bitString;
@@ -56,10 +52,8 @@ std::string decodeAIS(const std::string &ais)
 
 std::string extractBitSubstring(const std::string &bitString, int start, int end)
 {
-	// Sprawdzenie poprawności wejściowych parametrów
 	if (start < 0 || end >= bitString.size() || start > end)
 	{
-		std::cout << "Nieprawidłowe pozycje start i end" << std::endl;
 		return "Error";
 	}
 	else
@@ -84,17 +78,13 @@ std::string convertBitsToDecimal(const std::string &bitString)
 
 std::string binaryToASCII(const std::string &bitString)
 {
-	//std::cout << bitString << std::endl;
 	std::string result;
 	bool encounteredAtSign = false;
 
 	for (size_t i = 0; i < bitString.length(); i += 6)
 	{
-		// Wyciągnij 6-bitowy ciąg
 		std::string chunk = bitString.substr(i, 6);
-		// Zamień 6-bitowy ciąg na liczbę dziesiętną
 		int decimalValue = std::bitset<6>(chunk).to_ulong();
-		//std::cout << decimalValue << " ";
 
 		char asciiChar;
 		if (decimalValue >= 0 && decimalValue <= 31)
@@ -119,7 +109,6 @@ std::string binaryToASCII(const std::string &bitString)
 		result += asciiChar;
 	}
 
-	// Usuń końcowe spacje
 	result.erase(result.find_last_not_of(' ') + 1);
 
 	return result;
@@ -183,6 +172,13 @@ std::string navStatus(std::string navi)
 	}
 }
 
+std::string formatToTwoDigits(const std::string& number) {
+    int num = std::stoi(number);
+    std::stringstream ss;
+    ss << std::setw(2) << std::setfill('0') << num;
+    return ss.str();
+}
+
 std::string decodePayload(const std::string &bitString, int start, int end, std::string info, std::string dataType)
 {
 	std::string revString = extractBitSubstring(bitString, start, end);
@@ -191,18 +187,17 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 	{
 		return "Error";
 	}
-	//std::string bitStr = reverseEachBitSegment(revString, revString.length());
+	
 	std::string decimal = convertBitsToDecimal(revString);
 
 	if (dataType == "nav")
 	{
 		decimal = navStatus(decimal);
-		//std::cout << info << decimal << std::endl;
+		
 		return decimal;
 	}
 	else if (dataType == "b")
 	{
-		//std::cout << info << decimal << std::endl;
 		if (decimal == "1")
 		{
 			return "True";
@@ -231,6 +226,15 @@ std::string decodePayload(const std::string &bitString, int start, int end, std:
 		std::string text;
 		text = binaryToASCII(revString);
 		return text;
+	}
+	else if(dataType == "clock"){
+		std::string t;
+		t = formatToTwoDigits(decimal);
+		if(t == "60"){
+			t = "59";
+		}
+		
+		return t;
 	}
 	else if (dataType == "")
 	{
@@ -289,19 +293,19 @@ std::string message5(std::string revBitstring)
 	pft = decodePayload(revBitstring, 270, 273, "Pos fix type: ", "");
 	etam = decodePayload(revBitstring, 274, 277, "ETA month: ", "");
 	etad = decodePayload(revBitstring, 278, 282, "ETA day: ", "");
-	etah = decodePayload(revBitstring, 283, 287, "ETA hour: ", "");
-	etamin = decodePayload(revBitstring, 288, 293, "ETA minute: ", "");
+	etah = decodePayload(revBitstring, 283, 287, "ETA hour: ", "clock");
+	etamin = decodePayload(revBitstring, 288, 293, "ETA minute: ", "clock");
 	draught = decodePayload(revBitstring, 294, 301, "Draught: ", "u");
 	destination = decodePayload(revBitstring, 302, 421, "Destination: ", "t");
 	dte = decodePayload(revBitstring, 422, 422, "DTE: ", "");
 	std::ostringstream outputstream;
-	outputstream  << mmsiout << " 	" << aisversion << "	" << imonumber << "	"<< callsign << "	"<< vesselname << "	" << shiptype << "	" << dimtobow << "	"<< dimtostern << "	" << dimtoport << "	" << dimtosb << "	" << pft << "	" << etam << "	" << etad << "	" << etah << "	" << etamin << "	" << draught << "	" << destination << "	" << dte;
+	outputstream  << mmsiout << " 		" << aisversion << "			" << imonumber << "				"<< callsign << "				"<< vesselname << "				" << shiptype << "				" << dimtobow << "-"<< dimtostern << "-" << dimtoport << "-" << dimtosb << "			" << pft << "			" << etam << "-" << etad << "		" << etah << ":" << etamin << "			" << draught << "			" << destination << "			" << dte;
 	std::string output;
 	output = outputstream.str();
 	return output;
 }
 
-int main() // oczywiście wywali się z tego maina większość i zrobi funkcje jak już będzie działać + podzieli sie na pliki bo to w wymaganiach xd
+int main()
 {
 	std::ifstream file("data.txt");
 	if (!file)
@@ -322,7 +326,9 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		return 1;
 	}
 
-	outFile1 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "Nav Status" <<  "	Rate of Turn	" << " Speed " << "		 Pos Accuracy " << "	 Longtitude " << " 		Latitude " << "		 CoG " << " 		Heading " << " Time stamp " << "	 Maneuver " << " 	Spare " << "	 RAIM " << " RADIO STATUS" <<std::endl;
+	outFile1 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "Nav Status" <<  "	Rate of Turn	" << " Speed " << "		 Pos Accuracy " << "	 Longtitude " << " 		Latitude " << "		 CoG " << " 		Heading " << " Time stamp " << "	Maneuver " << " 	Spare " << "	 RAIM " << "		 RADIO STATUS" <<std::endl;
+	outFile5 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "AIS version"	 <<  "		IMO	" << " 				Call Sign " << "			Vessel Name " << "		Ship Type " << " 		Dimension" << "		 EPFD " << " 		ETA Date" << " 		ETA Time " << "		Draught " << "		Destination " << "	DTE" << "	Spare" <<std::endl;
+
 	std::vector<InputData> inputData;
 	std::string line;
 	std::string buffer;
@@ -346,6 +352,7 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		std::getline(ss, bytes, '*');
 		std::getline(ss, checkSum, '*');
 		
+        
 		if (frgsNumber >= 2) {
 			
             std::string nextLine;
@@ -374,7 +381,9 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		}
 		else
 		inputData.push_back({date, hour, messageType, fragsNumber, repeatIndicatorStr, seqID, channelCode, payload, bytes, checkSum});
+		
 	}
+		
 
 	file.close();
 
@@ -402,19 +411,16 @@ int main() // oczywiście wywali się z tego maina większość i zrobi funkcje 
 		if (msgType == "1" || msgType == "2" || msgType == "3")
 		{
 			out = message1to3(bitString);
-			outFile1 << date << "	" << "	" << hour << "		"<<  msgType << "			" << out << std::endl;
+			outFile1 << date << "		" << hour << "		"<<  msgType << "			" << out << std::endl;
 		}
 		else if (msgType == "5")
 		{
 			out = message5(bitString);
-			outFile5 << date << hour << msgType << out << std::endl;
+			outFile5 << date << "		" << hour << "		" << msgType <<"			" <<  out << std::endl;
 		}
-		
-		std::cout << out << std::endl;
 		
 	}
 	
-
 	outFile1.close();
 	outFile5.close();
 	return 0;

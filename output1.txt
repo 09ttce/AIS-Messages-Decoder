@@ -1,4 +1,4 @@
-Date			Hour		 Msg Type 		MMSI		Nav Status	Rate of Turn	 Speed 		 Pos Accuracy 	 Longtitude  		Latitude 		 CoG  		Heading  Time stamp 	 Maneuver  	Spare 	 RAIM  RADIO STATUS
+Date			Hour		 Msg Type 		MMSI		Nav Status	Rate of Turn	 Speed 		 Pos Accuracy 	 Longtitude  		Latitude 		 CoG  		Heading  Time stamp 	Maneuver  	Spare 	 RAIM 		 RADIO STATUS
 2017-04-01		00:00:00		1			230941700	0				0			12.000000		True			11.169760		32.875351		2998		301			59			0			0			1			32780
 2017-04-01		00:00:00		1			261510000	0				0			0.000000		True			11.192877		32.627586		856		256			15			0			0			0			16384
 2017-04-01		00:00:01		1			261183810	0				0			0.000000		True			11.204200		32.629601		233		73			51			1			0			0			133301
