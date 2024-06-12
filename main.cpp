@@ -121,31 +121,31 @@ std::string navStatus(std::string navi)
 	switch (num)
 	{
 	case (0):
-		status = "Under way using engine";
+		status = "Under way using engine									  ";
 		break;
 	case (1):
-		status = "At anchor";
+		status = "At anchor													  ";
 		break;
 	case (2):
-		status = "Not under command";
+		status = "Not under command											  ";
 		break;
 	case (3):
-		status = "Restricted manoeuverability";
+		status = "Restricted manoeuverability								  ";
 		break;
 	case (4):
-		status = "Constrained by her draught";
+		status = "Constrained by her draught								  ";
 		break;
 	case (5):
-		status = "Moored";
+		status = "Moored													  ";
 		break;
 	case (6):
-		status = "Aground";
+		status = "Aground													  ";
 		break;
 	case (7):
-		status = "Engaged in fishing";
+		status = "Engaged in fishing										  ";
 		break;
 	case (8):
-		status = "Under way sailing";
+		status = "Under way sailing											  ";
 		break;
 	case (9):
 		status = "Reserved for future amendment of Navigational Status for HSC";
@@ -154,22 +154,23 @@ std::string navStatus(std::string navi)
 		status = "Reserved for future amendment of Navigational Status for WIG";
 		break;
 	case (11):
-		status = "Power-driven vessel towing astern (regional use)";
+		status = "Power-driven vessel towing astern (regional use)			  ";
 		break;
 	case (12):
-		status = "Power-driven vessel pushing ahead or towing alongside (regional use)";
+		status = "Power-driven vessel pushing ahead or towing alongside (	  ";
 		break;
 	case (13):
-		status = "Reserved for future use";
+		status = "Reserved for future use									  ";
 		break;
 	case (14):
-		status = "AIS-SART is active";
+		status = "AIS-SART is active										  ";
 		break;
 	default:
-		status = "Undefined";
+		status = "Undefined													  ";
 
 		return status;
 	}
+return status;	
 }
 
 std::string formatToTwoDigits(const std::string& number) {
@@ -251,7 +252,7 @@ std::string message1to3(std::string revBitstring)
 	if(mmsiout.size() != 9){
 		return "	Error! - nieprawidlowe MMSI";
 	}
-	navout = decodePayload(revBitstring, 38, 41, "NavStatus: ", "");
+	navout = decodePayload(revBitstring, 38, 41, "NavStatus: ", "nav");
 	rotout = decodePayload(revBitstring, 42, 49, "Rate of Turn: ", "");
 	sogout = decodePayload(revBitstring, 50, 59, "Speed over ground: ", "u");
 	posaccout = decodePayload(revBitstring, 60, 60, "Position accuracy: ", "b");
@@ -326,7 +327,7 @@ int main()
 		return 1;
 	}
 
-	outFile1 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "Nav Status" <<  "	Rate of Turn	" << " Speed " << "		 Pos Accuracy " << "	 Longtitude " << " 		Latitude " << "		 CoG " << " 		Heading " << " Time stamp " << "	Maneuver " << " 	Spare " << "	 RAIM " << "		 RADIO STATUS" <<std::endl;
+	outFile1 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "Nav Status														" <<  "	Rate of Turn	" << " Speed " << "		 Pos Accuracy " << "		 Longtitude " << " 	Latitude " << "		 CoG " << " 		Heading " << " Time stamp " << "	Maneuver " << " 	Spare " << "	 RAIM " << "		 RADIO STATUS" <<std::endl;
 	outFile5 << "Date			" << "Hour		" << " Msg Type " << "		MMSI		" << "AIS version"	 <<  "		IMO	" << " 				Call Sign " << "			Vessel Name " << "		Ship Type " << " 		Dimension" << "		 EPFD " << " 		ETA Date" << " 		ETA Time " << "		Draught " << "		Destination " << "	DTE" << "	Spare" <<std::endl;
 
 	std::vector<InputData> inputData;
@@ -392,14 +393,10 @@ int main()
 		
 		std::string date = InputData.date;
 		std::string hour = InputData.hour;
-
 		std::string aisMessage = InputData.payload;
-
 		std::string frags = InputData.fragsNumber;
 		std::string repeat = InputData.repeatIndicator;
-		
 		std::string bitString = decodeAIS(aisMessage);
-
 
 		if (bitString == "Error")
 		{
