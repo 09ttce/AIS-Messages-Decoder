@@ -61,3 +61,5 @@ CMakeCache.txt
 cmake_install.cmake
 chatgpt.cpp
 chatgpt
+.vscode/launch.json
+.vscode/tasks.json

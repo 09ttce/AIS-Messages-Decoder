@@ -1,5 +1,7 @@
-// Projekt POS
-// Dekodowanie AIS
+// Acadamic project
+// Decoding AIS messages
+
+// 09ttce 06.2024
 
 #include <iostream>
 #include <fstream>
@@ -157,7 +159,7 @@ std::string navStatus(std::string navi)
 		status = "Power-driven vessel towing astern (regional use)			  ";
 		break;
 	case (12):
-		status = "Power-driven vessel pushing ahead or towing alongside (	  ";
+		status = "Power-driven vessel pushing ahead or towing alongside  	  ";
 		break;
 	case (13):
 		status = "Reserved for future use									  ";
@@ -308,22 +310,22 @@ std::string message5(std::string revBitstring)
 
 int main()
 {
-	std::ifstream file("data.txt");
+	std::ifstream file("data.txt"); //input file with AIS data
 	if (!file)
 	{
-		std::cerr << "Nie mozna otworzyc pliku!" << std::endl;
+		std::cerr << "Can't open the file!" << std::endl;
 		return 1;
 	}
 	std::ofstream outFile1("output1.txt");
 	if (!outFile1)
 	{
-		std::cerr << "Nie można otworzyć pliku" << std::endl;
+		std::cerr << "Can't open the file!" << std::endl;
 		return 1;
 	}
 	std::ofstream outFile5("output5.txt");
 	if (!outFile5)
 	{
-		std::cerr << "Nie można otworzyć pliku" << std::endl;
+		std::cerr << "Can't open the file!" << std::endl;
 		return 1;
 	}
 
